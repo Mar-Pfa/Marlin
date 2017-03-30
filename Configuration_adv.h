@@ -194,9 +194,9 @@
 #endif //DUAL_X_CARRIAGE
     
 //homing hits the endstop, then retracts by this distance, before it tries to slowly bump again:
-#define X_HOME_RETRACT_MM 5 
-#define Y_HOME_RETRACT_MM 5 
-#define Z_HOME_RETRACT_MM 5 
+#define X_HOME_RETRACT_MM 3 
+#define Y_HOME_RETRACT_MM 3 
+#define Z_HOME_RETRACT_MM 3 
 //#define QUICK_HOME  //if this is defined, if both x and y are to be homed, a diagonal move will be performed initially.
 
 #define AXIS_RELATIVE_MODES {false, false, false, false}
@@ -210,7 +210,7 @@
 #define INVERT_E_STEP_PIN false
 
 //default stepper release if idle
-#define DEFAULT_STEPPER_DEACTIVE_TIME 60
+#define DEFAULT_STEPPER_DEACTIVE_TIME 60*10 // prime override to 10 minutes
 
 #define DEFAULT_MINIMUMFEEDRATE       0.0     // minimum feedrate
 #define DEFAULT_MINTRAVELFEEDRATE     0.0
