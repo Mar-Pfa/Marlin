@@ -103,11 +103,11 @@
 //Uncomment to enable autocalibration debug messages
 //#define DEBUG_MESSAGES
 //Speed for autocalibration travel and probing moves
-#define AUTOCAL_TRAVELRATE 500 // mm/sec
-#define AUTOCAL_PROBERATE 10 // mm/sec
+#define AUTOCAL_TRAVELRATE 600 // mm/sec
+#define AUTOCAL_PROBERATE 20 // mm/sec
 
 //Amount to lift head after probing a point
-#define AUTOCAL_PROBELIFT 2 // mm
+#define AUTOCAL_PROBELIFT 0.5 // mm
 
 // Amount to lift head after probing different points
 #define AUTOCAL_BEDSAFE 5 // mm
@@ -139,8 +139,6 @@
 #define TOWER_C_DIAGROD_ADJ 0 //Rear Tower// Z-Probe variables
 // Start and end location values are used to deploy/retract the probe (will move from start to end and back again) 
 #define Z_PROBE_OFFSET {-43, -27, -1.75, 0}  // X, Y, Z, E distance between hotend nozzle and deployed bed leveling probe. - prime modified
-#define Z_PROBE_DEPLOY_START_LOCATION {20, 96, 100, 0}   // X, Y, Z, E start location for z-probe deployment sequence
-#define Z_PROBE_DEPLOY_END_LOCATION {5, 96, 100, 0} 	  // X, Y, Z, E end location for z-probe deployment sequence
 #define Z_PROBE_RETRACT_START_LOCATION {0, 0, 130, 0}  // X, Y, Z, E start location for z-probe retract sequence
 #define Z_PROBE_RETRACT_END_LOCATION {0, 0, 150, 0}     // X, Y, Z, E end location for z-probe retract sequence 
 

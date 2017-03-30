@@ -6,11 +6,11 @@ Marlin Firmware with Delta autocalibration and various other updates/fixes
 This version has a much improved auto-calibration function which will hopefully be able to cope with many more printer configuration errors than previous versions were capable of resolving.
 The auto-calibration can now automatically adjust the following printer configuration variables:
 
-·	Delta Radius
-·	Diagonal Rod Length
-·	Software Endstop Offsets
-·	Z-Height Correction
-·	Tower Position Error Correction (independent Radius and Radial position adjustment for each tower)
+ï¿½	Delta Radius
+ï¿½	Diagonal Rod Length
+ï¿½	Software Endstop Offsets
+ï¿½	Z-Height Correction
+ï¿½	Tower Position Error Correction (independent Radius and Radial position adjustment for each tower)
 All of these values can also be changed manually if desired using the M666 command .
 
 The following G-Code commands are have been added to the standard marlin firmware:
@@ -60,11 +60,9 @@ All of these values can be saved/loaded to/from EEPROM using standard M500/M501 
 Configuration.h  now includes the following additional parameters:
 Set start and end locations used to deploy the Z-Probe:
 
-#define Z_PROBE_DEPLOY_START_LOCATION {20, 96, 30, 0}
-#define Z_PROBE_DEPLOY_END_LOCATION {5, 96, 30, 0}
 #define Z_PROBE_RETRACT_START_LOCATION {49, 84, 20, 0}         
 #define Z_PROBE_RETRACT_END_LOCATION {49, 84, 1, 0}
-Set precision for autocalibration G30 function – calibration will complete when this value is reached – all probed point have to be at 0 +/- 0.015mm (for 0.03 setting below)
+Set precision for autocalibration G30 function ï¿½ calibration will complete when this value is reached ï¿½ all probed point have to be at 0 +/- 0.015mm (for 0.03 setting below)
 
 #define AUTOCALIBRATION_PRECISION 0.03 // mm  
 

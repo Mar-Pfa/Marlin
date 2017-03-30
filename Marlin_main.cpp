@@ -166,8 +166,6 @@ CardReader card;
 float homing_feedrate[] = HOMING_FEEDRATE;
 float default_z_probe_offset[] = Z_PROBE_OFFSET;
 float z_probe_offset[3];
-float z_probe_deploy_start_location[] = Z_PROBE_DEPLOY_START_LOCATION;
-float z_probe_deploy_end_location[] = Z_PROBE_DEPLOY_END_LOCATION;
 float z_probe_retract_start_location[] = Z_PROBE_RETRACT_START_LOCATION;
 float z_probe_retract_end_location[] = Z_PROBE_RETRACT_END_LOCATION;
 bool axis_relative_modes[] = AXIS_RELATIVE_MODES;
@@ -908,29 +906,7 @@ void set_delta_constants()
 }
 
 void deploy_z_probe() {
-  if ((z_probe_deploy_start_location[X_AXIS] != 0)
-  and (z_probe_deploy_start_location[Y_AXIS] != 0)
-  and (z_probe_deploy_start_location[Z_AXIS] != 0))
-    {
-    feedrate = homing_feedrate[X_AXIS];
-    destination[X_AXIS] = z_probe_deploy_start_location[X_AXIS];
-    destination[Y_AXIS] = z_probe_deploy_start_location[Y_AXIS];
-    destination[Z_AXIS] = z_probe_deploy_start_location[Z_AXIS];
-    prepare_move_raw();
-
-    feedrate = homing_feedrate[X_AXIS]/10;
-    destination[X_AXIS] = z_probe_deploy_end_location[X_AXIS];
-    destination[Y_AXIS] = z_probe_deploy_end_location[Y_AXIS];
-    destination[Z_AXIS] = z_probe_deploy_end_location[Z_AXIS];
-    prepare_move_raw();
-
-    feedrate = homing_feedrate[X_AXIS];
-    destination[X_AXIS] = z_probe_deploy_start_location[X_AXIS];
-    destination[Y_AXIS] = z_probe_deploy_start_location[Y_AXIS];
-    destination[Z_AXIS] = z_probe_deploy_start_location[Z_AXIS];
-    prepare_move_raw();
-    st_synchronize();
-    }
+  // removed
 }
 
 void apply_endstop_adjustment(float x_endstop, float y_endstop, float z_endstop)
@@ -1490,41 +1466,11 @@ float adj_diagrod_length()
 }
 
 void retract_z_probe() {
-  if ((z_probe_retract_start_location[X_AXIS] != 0)
-  and (z_probe_retract_start_location[Y_AXIS] != 0)
-  and (z_probe_retract_start_location[Z_AXIS] != 0))
-    {
-    feedrate = homing_feedrate[X_AXIS];
-    destination[Z_AXIS] = 50;
-    prepare_move_raw();
+  // removed
 
-    destination[X_AXIS] = z_probe_retract_start_location[X_AXIS];
-    destination[Y_AXIS] = z_probe_retract_start_location[Y_AXIS];
-    destination[Z_AXIS] = z_probe_retract_start_location[Z_AXIS];
-    prepare_move();
-  
-    destination[X_AXIS] = z_probe_retract_start_location[X_AXIS];
-    destination[Y_AXIS] = z_probe_retract_start_location[Y_AXIS];
-    destination[Z_AXIS] = z_probe_retract_start_location[Z_AXIS];
-    prepare_move_raw();
-
-    // Move the nozzle below the print surface to push the probe up.
-    feedrate = homing_feedrate[Z_AXIS]/10;
-    destination[X_AXIS] = z_probe_retract_end_location[X_AXIS];
-    destination[Y_AXIS] = z_probe_retract_end_location[Y_AXIS];
-    destination[Z_AXIS] = z_probe_retract_end_location[Z_AXIS];
-    prepare_move_raw();
-
-    feedrate = homing_feedrate[Z_AXIS];
-    destination[X_AXIS] = z_probe_retract_start_location[X_AXIS];
-    destination[Y_AXIS] = z_probe_retract_start_location[Y_AXIS];
-    destination[Z_AXIS] = z_probe_retract_start_location[Z_AXIS];
-    prepare_move_raw();
-    st_synchronize();
-    }
 }
 
-float z_probe() {
+float z_probe(bool fast) {
   feedrate = AUTOCAL_TRAVELRATE * 60;
   prepare_move();
   st_synchronize();
@@ -1533,7 +1479,15 @@ float z_probe() {
   float start_z = current_position[Z_AXIS];
   long start_steps = st_get_position(Z_AXIS);
 
-  feedrate = AUTOCAL_PROBERATE * 60;
+  if (fast)
+  {
+    feedrate = AUTOCAL_PROBERATE * 60;
+  }
+  else
+  {
+    feedrate = AUTOCAL_PROBERATE * 15;
+  }
+  
   destination[Z_AXIS] = -20;
   prepare_move_raw();
   st_synchronize();
@@ -1577,6 +1531,12 @@ void calibrate_print_surface(float z_offset) {
 	// z position
     float probe_z;
 
+    // move down a little bit
+    feedrate = AUTOCAL_TRAVELRATE * 60;
+    destination[Z_AXIS] = 100;
+    prepare_move();
+    st_synchronize();
+
     for (int y = -3; y <= 3; y++)
     {
     int dir = y % 2 ? -1 : 1;
@@ -1584,24 +1544,14 @@ void calibrate_print_surface(float z_offset) {
       {
       if (x*x + y*y < 11)
         {
-        //destination[X_AXIS] = AUTOLEVEL_GRID * x - z_probe_offset[X_AXIS];
-        //destination[Y_AXIS] = AUTOLEVEL_GRID * y - z_probe_offset[Y_AXIS];
-        //destination[Z_AXIS] = 10 - z_probe_offset[Z_AXIS];
-        //prepare_move();
-        //saved_z = current_position[Z_AXIS];
 		
-		destination[Z_AXIS] = destination[Z_AXIS] + AUTOCAL_BEDSAFE;
-        probe_z = probe_bed((AUTOLEVEL_GRID * x),(AUTOLEVEL_GRID * y));
-        
-		bed_leveltmp[x + 3][y + 3] = probe_z + z_offset;
-        
-        //bed_level[x+3][y+3] = probe_bed(float(AUTOLEVEL_GRID * x), float(AUTOLEVEL_GRID * y)) + z_offset;
-        //destination[Z_AXIS] = saved_z;
-        //prepare_move_raw();
+    		  destination[Z_AXIS] = destination[Z_AXIS] + AUTOCAL_BEDSAFE;
+          probe_z = probe_bed((AUTOLEVEL_GRID * x),(AUTOLEVEL_GRID * y));        
+		      bed_leveltmp[x + 3][y + 3] = probe_z + z_offset;        
         }
       else
         {
-		  bed_leveltmp[x + 3][y + 3] = 0.0;
+		      bed_leveltmp[x + 3][y + 3] = 0.0;
         }
       }
     // For unprobed positions just copy nearest neighbor.
@@ -1622,7 +1572,7 @@ void calibrate_print_surface(float z_offset) {
       SERIAL_PROTOCOLPGM(" ");
       }
     SERIAL_ECHOLN("");
-  }
+    }
 
 // copy tempdata to new bed_level_data
 	for (int y = -3; y <= 3; y++)
@@ -1750,17 +1700,17 @@ float probe_bed(float x, float y)
   probe_count = 0;
   do 
   {
-    probe_z = z_probe();
+    probe_z = z_probe(probe_count == 0);
     probe_bed_array[probe_count] = probe_z;
     probe_done = false;
     if (probe_count > 0) 
     {
       for(int xx=0; xx < probe_count; xx++)
       {
-	    if (abs(probe_bed_array[xx] - probe_z)<0.005)
-		{ 
-		  probe_done = true;
-		}
+	      if (abs(probe_bed_array[xx] - probe_z)<0.005)
+		    { 
+		      probe_done = true;
+		    }
 			/*
 			SERIAL_ECHO("probe_z=");
 			SERIAL_PROTOCOL_F(probe_z,5);
@@ -1775,6 +1725,7 @@ float probe_bed(float x, float y)
     }
     probe_count ++;
   } while ((probe_done == false) and (probe_count < 20));
+
   if (!probe_done)
   {
 	  probe_z = 0;

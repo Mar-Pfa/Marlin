@@ -166,8 +166,6 @@ CardReader card;
 float homing_feedrate[] = HOMING_FEEDRATE;
 float default_z_probe_offset[] = Z_PROBE_OFFSET;
 float z_probe_offset[3];
-float z_probe_deploy_start_location[] = Z_PROBE_DEPLOY_START_LOCATION;
-float z_probe_deploy_end_location[] = Z_PROBE_DEPLOY_END_LOCATION;
 float z_probe_retract_start_location[] = Z_PROBE_RETRACT_START_LOCATION;
 float z_probe_retract_end_location[] = Z_PROBE_RETRACT_END_LOCATION;
 bool axis_relative_modes[] = AXIS_RELATIVE_MODES;
@@ -908,29 +906,7 @@ void set_delta_constants()
 }
 
 void deploy_z_probe() {
-  if ((z_probe_deploy_start_location[X_AXIS] != 0)
-  and (z_probe_deploy_start_location[Y_AXIS] != 0)
-  and (z_probe_deploy_start_location[Z_AXIS] != 0))
-    {
-    feedrate = homing_feedrate[X_AXIS];
-    destination[X_AXIS] = z_probe_deploy_start_location[X_AXIS];
-    destination[Y_AXIS] = z_probe_deploy_start_location[Y_AXIS];
-    destination[Z_AXIS] = z_probe_deploy_start_location[Z_AXIS];
-    prepare_move_raw();
-
-    feedrate = homing_feedrate[X_AXIS]/10;
-    destination[X_AXIS] = z_probe_deploy_end_location[X_AXIS];
-    destination[Y_AXIS] = z_probe_deploy_end_location[Y_AXIS];
-    destination[Z_AXIS] = z_probe_deploy_end_location[Z_AXIS];
-    prepare_move_raw();
-
-    feedrate = homing_feedrate[X_AXIS];
-    destination[X_AXIS] = z_probe_deploy_start_location[X_AXIS];
-    destination[Y_AXIS] = z_probe_deploy_start_location[Y_AXIS];
-    destination[Z_AXIS] = z_probe_deploy_start_location[Z_AXIS];
-    prepare_move_raw();
-    st_synchronize();
-    }
+  // removed
 }
 
 void apply_endstop_adjustment(float x_endstop, float y_endstop, float z_endstop)
