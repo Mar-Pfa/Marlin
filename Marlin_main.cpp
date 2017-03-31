@@ -1531,9 +1531,12 @@ void calibrate_print_surface(float z_offset) {
 	// z position
     float probe_z;
 
-    // move down a little bit
+    // move down a little bit    
     feedrate = AUTOCAL_TRAVELRATE * 60;
+    feedmultiply = 100;
     destination[Z_AXIS] = 100;
+    destination[Y_AXIS] = 0;
+    destination[X_AXIS] = 0;
     prepare_move();
     st_synchronize();
 
@@ -1693,7 +1696,8 @@ float probe_bed(float x, float y)
   int probe_count;
   boolean probe_done;
   saved_feedrate = feedrate;
-  //feedrate = homing_feedrate[Z_AXIS]; 
+  feedrate = homing_feedrate[Z_AXIS]; 
+  feedmultiply = 100;
   destination[X_AXIS] = x - z_probe_offset[X_AXIS];
   destination[Y_AXIS] = y - z_probe_offset[Y_AXIS];
   
@@ -1735,6 +1739,7 @@ float probe_bed(float x, float y)
 	  }
 	  probe_z /= 20;
   }
+  /*
   SERIAL_ECHO("P:");  
   for (int i = 0; i < probe_count; i++)
   {
@@ -1742,6 +1747,7 @@ float probe_bed(float x, float y)
 	  SERIAL_ECHO(" ");
   }
   SERIAL_ECHOLN("");
+  */
   feedrate = saved_feedrate;
   bed_safe_z = probe_z + 50;
   return probe_z + z_probe_offset[Z_AXIS];
@@ -2173,7 +2179,7 @@ void process_commands()
 		  saved_feedmultiply = feedmultiply;
 		  feedmultiply = 100;
 		  bed_safe_z = 50;
-
+      feedrate = AUTOCAL_TRAVELRATE;
 		  deploy_z_probe();
 		  calibrate_print_surface(//z_probe_offset[Z_AXIS] +
 			  (code_seen(axis_codes[Z_AXIS]) ? code_value() : 0.0));
@@ -3264,6 +3270,10 @@ void process_commands()
       if(code_seen('S'))
       {
         feedmultiply = code_value() ;
+      }
+      else
+      {
+        SERIAL_ECHO(feedmultiply);
       }
     }
     break;
