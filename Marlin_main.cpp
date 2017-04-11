@@ -271,7 +271,7 @@ static float bed_level[7][7] = {
 static bool home_all_axis = true;
 static float feedrate = 1500.0, next_feedrate, saved_feedrate, z_offset;
 static float bed_level_c, bed_level_x, bed_level_y, bed_level_z;
-static float bed_safe_z = 45; //used for inital bed probe safe distance (to avoid crashing into bed)
+static float bed_safe_z = 30; //used for inital bed probe safe distance (to avoid crashing into bed)
 static float bed_level_ox, bed_level_oy, bed_level_oz;
 static long gcode_N, gcode_LastN, Stopped_gcode_LastN = 0;
 static int loopcount;
@@ -1020,7 +1020,7 @@ void adj_endstops() {
       max_pos[Z_AXIS] -= high_endstop;      
       set_delta_constants();
       }
-    bed_safe_z = 50;
+    bed_safe_z = 30;
 }
 
 int fix_tower_errors()
@@ -1471,7 +1471,7 @@ void retract_z_probe() {
 }
 
 float z_probe(bool fast) {
-  feedrate = AUTOCAL_TRAVELRATE * 60;
+  feedrate = AUTOCAL_TRAVELRATE * 60.0;
   prepare_move();
   st_synchronize();
   
@@ -1511,7 +1511,7 @@ float z_probe(bool fast) {
     saved_position[i] = float(st_get_position(i) / axis_steps_per_unit[i]);
     }
   
-  feedrate = AUTOCAL_TRAVELRATE * 60;
+  feedrate = AUTOCAL_TRAVELRATE * 60.0;
   destination[Z_AXIS] = mm + AUTOCAL_PROBELIFT;
   prepare_move_raw();
   st_synchronize();
@@ -1532,7 +1532,7 @@ void calibrate_print_surface(float z_offset) {
     float probe_z;
 
     // move down a little bit    
-    feedrate = AUTOCAL_TRAVELRATE * 60;
+    feedrate = AUTOCAL_TRAVELRATE * 60.0;
     feedmultiply = 100;
     destination[Z_AXIS] = 100;
     destination[Y_AXIS] = 0;
@@ -1700,7 +1700,8 @@ float probe_bed(float x, float y)
   feedmultiply = 100;
   destination[X_AXIS] = x - z_probe_offset[X_AXIS];
   destination[Y_AXIS] = y - z_probe_offset[Y_AXIS];
-  
+  destination[Z_AXIS] +=3; // bed safe special
+    
   probe_count = 0;
   do 
   {
@@ -1749,7 +1750,7 @@ float probe_bed(float x, float y)
   SERIAL_ECHOLN("");
   */
   feedrate = saved_feedrate;
-  bed_safe_z = probe_z + 50;
+  bed_safe_z = probe_z + 30;
   return probe_z + z_probe_offset[Z_AXIS];
   }
 
@@ -2159,6 +2160,7 @@ void process_commands()
 				  bed_level[x][y] = 0;
 			  }
 		  }
+     SERIAL_ECHOLN("Bed Level Array Cleared!");
 		  break;
 	  }
 	  // i = invert
@@ -2177,9 +2179,10 @@ void process_commands()
 	  {
 		  saved_feedrate = feedrate;
 		  saved_feedmultiply = feedmultiply;
-		  feedmultiply = 100;
-		  bed_safe_z = 50;
-      feedrate = AUTOCAL_TRAVELRATE;
+		  feedmultiply = 100;      
+		  bed_safe_z = 30;
+      feedrate = AUTOCAL_TRAVELRATE * 60;
+      next_feedrate = feedrate;
 		  deploy_z_probe();
 		  calibrate_print_surface(//z_probe_offset[Z_AXIS] +
 			  (code_seen(axis_codes[Z_AXIS]) ? code_value() : 0.0));
@@ -2267,7 +2270,7 @@ void process_commands()
          SERIAL_ECHOLN("mm");
          }
        
-       bed_safe_z = 50;
+       bed_safe_z = 30;
        home_delta_axis();
        deploy_z_probe(); 
         
@@ -2392,7 +2395,7 @@ void process_commands()
                  //Tower positions have been changed .. home to endstops
                  SERIAL_ECHOLN("Tower Postions changed .. Homing Endstops");
                  home_delta_axis();
-                 bed_safe_z = 50;
+                 bed_safe_z = 30;
                  }
                else
                 {   
@@ -2402,7 +2405,7 @@ void process_commands()
                   //If diag rod length has been changed .. home to endstops
                   SERIAL_ECHOLN("Diag Rod Length changed .. Homing Endstops");
                   home_delta_axis();
-                  bed_safe_z = 50;
+                  bed_safe_z = 30;
                   }
                 }
                bed_probe_all();
@@ -2453,7 +2456,9 @@ void process_commands()
 
   else if(code_seen('M'))
   {
-    switch( (int)code_value() )
+    
+    int codevalue = (int)code_value();
+    switch( codevalue )
     {
 #ifdef ULTIPANEL
     case 0: // M0 - Unconditional stop - Wait for user button press on LCD
@@ -3289,6 +3294,7 @@ void process_commands()
     #if NUM_SERVOS > 0
     case 280: // M280 - set servo position absolute. P: servo index, S: angle or microseconds
       {
+        SERIAL_PROTOCOLLN("Servosettings...");
         int servo_index = -1;
         int servo_position = 0;
         if (code_seen('P'))
@@ -3297,6 +3303,8 @@ void process_commands()
           servo_position = code_value();
           if ((servo_index >= 0) && (servo_index < NUM_SERVOS)) {
             servos[servo_index].write(servo_position);
+            SERIAL_PROTOCOL("NewPos: ");    
+            SERIAL_PROTOCOLLN(servo_position);
           }
           else {
             SERIAL_ECHO_START;
@@ -3723,6 +3731,11 @@ void process_commands()
       gcode_LastN = Stopped_gcode_LastN;
       FlushSerialRequestResend();
     break;
+    default:
+       SERIAL_ECHO_START;
+       SERIAL_ECHO("Unknown Code");
+       SERIAL_ECHOLN(codevalue);
+       break;
     }
   }
 
